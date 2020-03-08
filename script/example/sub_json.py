@@ -1,37 +1,25 @@
 import sys
 sys.path.append("../")
-from ZMQRPCClient import *
-import zmq
+from BaosNodeImpl import *
 import json
 import time
+import os
+import signal
 
-def callback(result):
+def CtrlC():
+    print("exit")
+    exit()
+
+
+def print(result):
     if("result" in result):
         print("recieve json is : ",result["result"])
 
-if __name__ == "__main__":
-    client = ZMQRPCClient()
+if __name__ == "__main__" :
+    BaosNodeImpl.getInstance().init("239.255.0.1","10009", None)
+    BaosNodeImpl.getInstance().subscribeTopic_Json("print", print)
 
-    client.connect("tcp://127.0.0.1:5555")
+    signal.signal(signal.SIGINT, CtrlC)
 
-    while(1):
-        # input params is dict type
-        params_dict ={
-            "sub1" : 3,
-            "sub2" : 6
-        }
-        result = client.call("sub",params_dict)
-        if("result" in result):
-            print("result is ",result["result"])
+    input()
 
-        params_dict ={
-            "sub1" : 60,
-            "sub2" : 20
-        }
-        client.async_call("sub",params_dict,callback)
-        time.sleep(1)
-
-        result = client.call("get_data")
-        if("result" in result):
-            print("result is ",result["result"])
-        # time.sleep(1)

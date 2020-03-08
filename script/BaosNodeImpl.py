@@ -58,6 +58,7 @@ class BaosNodeImpl(object):
     def init(self, multiIP, localPort, point = None):
         self.m_connManager = Multicast(multiIP,self.m_localIP)
         self.m_localIP = self.m_connManager.get_localip()
+        print("self.m_localIP is ",self.m_localIP)
         self.m_localPort = localPort
 
         # pub&sub init
@@ -140,6 +141,8 @@ class BaosNodeImpl(object):
         
         
     def publishTopic(self,topic):
+        print("get into publishTopic")
+        print("topic is ",topic,"  m_topicEndpoint is ",self.m_topicEndpoint)
         self.m_connManager.multicastTopic(topic, self.m_topicEndpoint)
     
     def publish_json(self,topic,json_str):
@@ -220,6 +223,7 @@ class BaosNodeImpl(object):
         endpoints = []
         endpoint = ""
 
+        print("get into subscribeTopic_Json")
         if( self.m_connManager.findTopic(topic, endpoints) == None ):
             print("can not find topic")
             jsnCB = JsnCallBack()
@@ -230,7 +234,7 @@ class BaosNodeImpl(object):
             self.m_connManager.pushTopic_JsonCallBack(jsnCB)
             self.m_connManager.sendRequest(topic,"topic")
             return
-        
+
         self.m_jsonHandlers[topic] = jsncb
         for endpoint in endpoints:
             if(endpoint not in self.m_connectionJson.keys()):
@@ -240,7 +244,7 @@ class BaosNodeImpl(object):
                 if(self.m_connectionDealWay[endpoint][JsonType] == 0):
                     self.addSocket(self.m_connectionJson[endpoint], JsonType)
                     self.m_connectionDealWay[endpoint][JsonType] = 1
-    
+
     def unSubscribeTopic(self,topic):
         endpoints = []
 

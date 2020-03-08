@@ -163,6 +163,8 @@ class Multicast(object):
                 }
         json_str = json.dumps(json_dict)
         json_bytes = bytes(json_str, encoding = "utf8")
+        print("__m_multicast_addr is ",self.__m_multicast_addr)
+        print("g_multicast_port is ",g_multicast_port)
         self.__m_send_socket.send((self.__m_multicast_addr,g_multicast_port),json_bytes)
 
     def sendRequest(self,supportName,filed):
@@ -190,9 +192,10 @@ class Multicast(object):
     # endpoints : endpoint list
     def findTopic(self,topicName,endpoints):
         res = True
-        print("finding topic name in local map: " ,topicName)
-        topic_endpoints = self.__m_topicMap[topicName]
+        # print("finding topic name in local map: " ,topicName)
+        topic_endpoints = self.__m_topicMap.get(topicName)
         if(topic_endpoints == None): #can not find topic
+            print("can not find topic name in local map")
             res = False
             return res
         endpoints = topic_endpoints
@@ -228,34 +231,35 @@ class Multicast(object):
         print("socket disconnect")
     
     def handlerRecv(self,handle, ip_port, flags, data, error):
+        print("get into handler Recv")
         if(error is None):
             if(data is not None):
                 json_str = str(data, encoding = "utf-8")  
                 result = json.loads(json_str)
                 print("recieve json is : ",result)
 
-                # if(result["endpoint"] is not None):
-                #     method = result["method"]
-                #     # if recieve topic msg
-                #     if(result["topic"] is not None):
-                #         if(method == "commonMulti"):
-                #             self.updateMap(topicType,result)
-                #             self.dealDelayCallBack(result["topic"])
-                #         elif(method == "request"):
-                #             self.findLocalSupport(result["topic"],topicType)
-                #         elif (method == "response"):
-                #             self.updateMap(topicType,result)
-                #             self.dealDelayCallBack(result["topic"])
-                #     # deal service msg
-                #     elif(result["service"] is not None):
-                #         if(method == "commonMulti"):
-                #             self.updateMap(serviceType,result)
-                #             self.dealServiceDelayCall(result["service"])
-                #         elif(method == "request"):
-                #             self.findLocalSupport(result["service"],serviceType)
-                #         elif(method == "response"):
-                #             self.updateMap(serviceType,result)
-                #             self.dealServiceDelayCall(result["service"])
+                if(result["endpoint"] is not None):
+                    method = result["method"]
+                    # if recieve topic msg
+                    if(result["topic"] is not None):
+                        if(method == "commonMulti"):
+                            self.updateMap(topicType,result)
+                            self.dealDelayCallBack(result["topic"])
+                        elif(method == "request"):
+                            self.findLocalSupport(result["topic"],topicType)
+                        elif (method == "response"):
+                            self.updateMap(topicType,result)
+                            self.dealDelayCallBack(result["topic"])
+                    # deal service msg
+                    elif(result["service"] is not None):
+                        if(method == "commonMulti"):
+                            self.updateMap(serviceType,result)
+                            self.dealServiceDelayCall(result["service"])
+                        elif(method == "request"):
+                            self.findLocalSupport(result["service"],serviceType)
+                        elif(method == "response"):
+                            self.updateMap(serviceType,result)
+                            self.dealServiceDelayCall(result["service"])
         else:
             print("error is ",error)
 
